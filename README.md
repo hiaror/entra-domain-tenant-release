@@ -8,6 +8,8 @@ This repository documents a fast, self-service way to deal with it using Microso
 
 Everything here was carried out and validated on a real tenant. The identifiers in the logs are sanitised. Throughout, `yourdomain.com` stands for the custom domain, `holdingtenant.onmicrosoft.com` and `destinationtenant.onmicrosoft.com` for the initial domains of the tenant that holds it and the tenant that wants it, and values in angle brackets, such as `<HOLDING_TENANT_ID>`, for identifiers you take from your own environment.
 
+The home realm discovery lookup also works in your browser, with no PowerShell and no sign-in, at [aroramsp.com/tools/domain-tenant-lookup](https://aroramsp.com/tools/domain-tenant-lookup/).
+
 ## Why This Exists
 
 When a domain is stuck in another tenant, the error you see is about verification failing in your own tenant. Nothing on that screen tells you where the domain actually is, so the natural first step is to raise a support case, and those cases frequently stall. The information you need to move quickly is public and takes seconds to retrieve, but it is not obvious that it exists or how to read it. This repository brings the discovery lookups and the Graph PowerShell release path into one place, with the real output at each step so you can confirm you are looking at the same situation.
@@ -84,7 +86,7 @@ $cfg.cloud_instance_name # microsoftonline.com for the worldwide commercial clou
 $cfg.tenant_region_scope # for example NA, EU, AS
 ```
 
-Run both against the domain you are trying to add, and against a domain in your own tenant, such as `destinationtenant.onmicrosoft.com`, and compare. If the GUIDs differ, the domain is in a separate directory, and the GUID you now have is the holding tenant. See [docs/01-home-realm-discovery.md](docs/01-home-realm-discovery.md), or use [scripts/Get-DomainTenant.ps1](scripts/Get-DomainTenant.ps1) to run all of this in one step.
+Run both against the domain you are trying to add, and against a domain in your own tenant, such as `destinationtenant.onmicrosoft.com`, and compare. If the GUIDs differ, the domain is in a separate directory, and the GUID you now have is the holding tenant. See [docs/01-home-realm-discovery.md](docs/01-home-realm-discovery.md), or use [scripts/Get-DomainTenant.ps1](scripts/Get-DomainTenant.ps1) to run all of this in one step. The same lookup also works in your browser, with no PowerShell and no sign-in, at [aroramsp.com/tools/domain-tenant-lookup](https://aroramsp.com/tools/domain-tenant-lookup/).
 
 ## Step 2: Managed or Unmanaged
 
