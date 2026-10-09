@@ -1,0 +1,59 @@
+# Sanitised output: the blocking user permanently deleted, the domain removed from the holding
+# tenant, then verified in the destination tenant. Identifiers have been replaced with
+# placeholders. The key lines are "References found: 0", Realm: Unknown, and IsVerified True.
+
+# Holding tenant 11111111-1111-1111-1111-111111111111, reconnected with User.ReadWrite.All and
+# User.DeleteRestore.All added and -ContextScope Process.
+# Remove-MgUser -UserId 33333333-3333-3333-3333-333333333333, then Start-Sleep -Seconds 30, then
+# Remove-MgDirectoryDeletedItem -DirectoryObjectId 33333333-3333-3333-3333-333333333333.
+# Both cmdlets return nothing on success. Each line below is a status message printed by the
+# commands used in the run after the matching cmdlet.
+
+Moved to deleted users.
+Permanently deleted.
+
+# Get-MgDomainNameReference -DomainId yourdomain.com -All, counted.
+# Status message printed by the commands used in the run, not cmdlet output.
+
+References found: 0
+
+# Remove-MgDomain -DomainId yourdomain.com, which returns nothing on success.
+# Status message printed by the commands used in the run, not cmdlet output.
+
+Domain removal submitted.
+
+# Status lines printed by the wait loop in the commands used in the run, which checked once a
+# minute whether the domain was still listed by Get-MgDomain and what the realm lookup returned.
+# Release-Domain.ps1 -Wait prints the same format.
+
+20:04  Still in old tenant: False  Realm: Unknown
+Gone from the old tenant.
+
+# Destination tenant 22222222-2222-2222-2222-222222222222, at 20:08:
+# Invoke-MgGraphRequest -Method POST https://graph.microsoft.com/v1.0/domains/yourdomain.com/verify
+# The response is the domain object, printed as a hashtable. supportedServices is empty.
+
+Name                             Value
+----                             -----
+isAdminManaged                   True
+id                               yourdomain.com
+isVerified                       True
+authenticationType               Managed
+availabilityStatus               AvailableImmediately
+isDefault                        False
+@odata.context                   https://graph.microsoft.com/v1.0/$metadata#domains/$entity
+passwordValidityPeriodInDays     2147483647
+isInitial                        False
+passwordNotificationWindowInDays 14
+isRoot                           True
+supportedServices                {}
+state
+# Status message printed by the commands used in the run after the verify call returned,
+# not cmdlet output.
+Verify accepted.
+
+# Get-MgDomain -DomainId yourdomain.com | Select-Object Id, IsVerified, IsDefault | Format-Table -AutoSize
+
+Id             IsVerified IsDefault
+--             ---------- ---------
+yourdomain.com       True     False

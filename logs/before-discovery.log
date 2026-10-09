@@ -1,0 +1,32 @@
+# Sanitised home realm discovery output for a domain held by another tenant.
+# Identifiers have been replaced with placeholders. The key values are
+# NameSpaceType Managed, the FederationBrandName, the tenant GUID inside the issuer,
+# and SameTenant False in the comparison.
+
+# Invoke-RestMethod "https://login.microsoftonline.com/getuserrealm.srf?login=test@yourdomain.com&json=1"
+
+State                  : 4
+UserState              : 1
+Login                  : test@yourdomain.com
+NameSpaceType          : Managed
+DomainName             : yourdomain.com
+FederationBrandName    : Contoso Ltd
+CloudInstanceName      : microsoftonline.com
+CloudInstanceIssuerUri : urn:federation:MicrosoftOnline
+
+# Invoke-RestMethod "https://login.microsoftonline.com/yourdomain.com/v2.0/.well-known/openid-configuration" |
+#     Select-Object issuer, cloud_instance_name, tenant_region_scope | Format-List
+
+issuer              : https://login.microsoftonline.com/11111111-1111-1111-1111-111111111111/v2.0
+cloud_instance_name : microsoftonline.com
+tenant_region_scope : NA
+
+# Comparison object from a short command during the run, built from two openid-configuration
+# lookups, one for yourdomain.com and one for destinationtenant.onmicrosoft.com, shown with
+# Format-List. Get-DomainTenant.ps1 -CompareDomain reports the same comparison in its own format.
+
+Holding     : https://login.microsoftonline.com/11111111-1111-1111-1111-111111111111/v2.0
+Destination : https://login.microsoftonline.com/22222222-2222-2222-2222-222222222222/v2.0
+SameTenant  : False
+
+# Holding tenant ID, taken from the issuer: 11111111-1111-1111-1111-111111111111

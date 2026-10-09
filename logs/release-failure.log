@@ -1,0 +1,46 @@
+# Sanitised Microsoft Graph PowerShell output from the holding tenant: forceDelete accepted,
+# then failed on a referenced user. Identifiers have been replaced with placeholders.
+# Remove-MgDomain was not run while this reference existed. Microsoft documents that a
+# domain cannot be deleted while any object still depends on it.
+
+# Get-MgDomainNameReference -DomainId yourdomain.com -All, counted, then each reference with
+# Type, Name and UPN expanded from AdditionalProperties and piped to Format-Table -AutoSize.
+# "References found: 1" is a status message printed by the commands used in the run, not
+# cmdlet output.
+
+References found: 1
+
+Id                                   Type                  Name        UPN
+--                                   ----                  ----        ---
+33333333-3333-3333-3333-333333333333 #microsoft.graph.user Old Account user@yourdomain.com
+
+# Get-MgUser -UserId 33333333-3333-3333-3333-333333333333 with selected properties, the
+# licence count and the proxy addresses joined into one line, then Format-List.
+
+DisplayName       : Old Account
+UserPrincipalName : user@yourdomain.com
+Mail              : user@yourdomain.com
+AccountEnabled    : True
+CreatedDateTime   : 14/5/2018 9:27:11 AM
+Licenses          : 0
+ProxyAddresses    : smtp:user@holdingtenant.onmicrosoft.com; SMTP:user@yourdomain.com
+
+# Invoke-MgGraphRequest -Method POST https://graph.microsoft.com/v1.0/domains/yourdomain.com/forceDelete
+# with the body {"disableUserAccounts": false}, at 19:54. The call returned no error.
+# The line below is a status message printed by the commands used in the run, not cmdlet output.
+
+Force delete accepted.
+
+# Status lines printed by the first wait loop in the commands used in the run, which checked
+# only whether the domain was still listed by Get-MgDomain and what the realm lookup returned.
+# Neither shows the failure. Release-Domain.ps1 -Wait prints the same format.
+
+19:55  Still in old tenant: True  Realm: Managed
+19:57  Still in old tenant: True  Realm: Managed
+
+# Status line printed by a second loop in the commands used in the run, which also read
+# (Get-MgDomain -DomainId yourdomain.com).State. This was the first time the state was read,
+# so when the operation actually failed is not known. The failure reason is inside the Status
+# string itself. It names the user but does not mention Exchange.
+
+19:59  In old tenant: True  Operation: ForceDelete  Status: Failed. Reason = Cannot delete the domain currently referenced by at least 1 objects. Conflicting object User/33333333-3333-3333-3333-333333333333.  Realm: Managed
