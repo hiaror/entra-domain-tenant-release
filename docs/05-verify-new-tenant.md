@@ -22,7 +22,7 @@ RegionScope     :
 No tenant claims this domain. It is free to verify.
 ```
 
-`NameSpaceType` of `Unknown` and an empty tenant ID mean no tenant holds the domain.
+`NameSpaceType` of `Unknown` and an empty tenant ID mean no tenant holds the domain. If `NameSpaceType` is `Unknown` but a tenant ID is shown, the domain is not free: see [When the realm lookup returns Unknown](01-home-realm-discovery.md#when-the-realm-lookup-returns-unknown).
 
 The realm lookup can lag the removal, so recheck it before you verify. In the validated run it changed within about a minute, but allow a few minutes. If it still returns `Managed` with the holding tenant GUID, wait and run it again. Do not try to verify until it reads `Unknown`, because until then the verification fails exactly as it did at the start.
 

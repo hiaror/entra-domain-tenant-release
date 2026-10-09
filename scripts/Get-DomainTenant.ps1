@@ -14,7 +14,14 @@
       Federated   a tenant holds the domain and sends sign-in to an external
                   identity provider, whose address appears in AuthURL when
                   the response includes it (observed, not documented)
-      Unknown     no tenant holds the domain, so it is free to verify
+      Unknown     the worldwide realm lookup does not recognise the domain.
+                  In observed responses, the OpenID lookup then decides:
+                  with no tenant ID the domain is free to verify; with a
+                  tenant ID in a cloud other than microsoftonline.com it is
+                  held in that national cloud and is not free to verify;
+                  with a tenant ID in the worldwide cloud, or no cloud
+                  value, the two lookups disagree and the result is
+                  inconclusive.
     A failed lookup, or any other value, is reported as inconclusive.
 
     Run it against a domain you are trying to add, and optionally against a domain
@@ -87,7 +94,15 @@ if ($primary.NameSpaceType -eq "Managed") {
         Write-Host "Sign-in is sent to: $($primary.AuthURL)" -ForegroundColor Yellow
     }
 } elseif ($primary.NameSpaceType -eq "Unknown") {
-    Write-Host "No tenant claims this domain. It is free to verify." -ForegroundColor Green
+    # The worldwide realm lookup returns Unknown for a domain held in a national cloud,
+    # while the OpenID lookup still names its tenant. Never call that free to verify.
+    if ($primary.TenantId -and $primary.CloudInstance -and $primary.CloudInstance -ne "microsoftonline.com") {
+        Write-Host "The worldwide realm lookup does not recognise this domain, but a tenant holds it in another cloud ($($primary.CloudInstance)). It is not free to verify." -ForegroundColor Yellow
+    } elseif ($primary.TenantId) {
+        Write-Host "The result is inconclusive: the realm lookup found no tenant, but a tenant ID came back. Do not treat the domain as free to verify. Run the lookup again." -ForegroundColor Red
+    } else {
+        Write-Host "No tenant claims this domain. It is free to verify." -ForegroundColor Green
+    }
 } else {
     Write-Host "The result is inconclusive (NameSpaceType: $($primary.NameSpaceType)). Run the lookup again before acting on it." -ForegroundColor Red
 }

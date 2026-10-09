@@ -71,7 +71,7 @@ Read the `NameSpaceType` field:
 
 - `Managed` means a tenant owns the domain and signs users in itself.
 - `Federated` means a tenant owns the domain and sends sign-in to an external identity provider, such as AD FS. The domain is equally taken, and in observed responses it also carries the provider's address in `AuthURL`.
-- `Unknown` means no tenant claims the domain, and it is free to verify.
+- `Unknown` means the worldwide realm lookup does not recognise the domain. Treat it as free to verify only when the OpenID lookup below also returns no tenant. In testing, a domain held in a national cloud, such as US Government, returned `Unknown` here while its OpenID configuration still named a tenant in that cloud.
 
 `Managed` here describes sign-in, not whether the tenant has an administrator. That question is Step 2.
 
@@ -173,7 +173,7 @@ forceDelete also requires references where Exchange is the provisioning service 
 
 ## Step 5: Verify in the Destination Tenant
 
-Once the realm lookup returns `Unknown`, the domain is free. The lookup can lag the removal, so recheck it before you verify. Verify the domain in the destination tenant. If the verification TXT record is already live in DNS, this completes with no DNS change at all. See [docs/05-verify-new-tenant.md](docs/05-verify-new-tenant.md).
+Once the realm lookup returns `Unknown` and the OpenID lookup returns no tenant, the domain is free. The lookup can lag the removal, so recheck it before you verify. Verify the domain in the destination tenant. If the verification TXT record is already live in DNS, this completes with no DNS change at all. See [docs/05-verify-new-tenant.md](docs/05-verify-new-tenant.md).
 
 ```powershell
 Disconnect-MgGraph

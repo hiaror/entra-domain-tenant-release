@@ -31,7 +31,7 @@ CloudInstanceIssuerUri : urn:federation:MicrosoftOnline
 
 - **Managed** means a tenant has verified the domain and signs users in for it directly in Microsoft Entra ID. The domain is taken.
 - **Federated** means a tenant has verified the domain and sends sign-in to an external identity provider, such as AD FS. The domain is equally taken. In responses observed for federated domains, there is also an `AuthURL` field with the address of that provider, which tells you who runs sign-in for the domain. This field is observed, not documented.
-- **Unknown** means no tenant has verified the domain. It is free to verify in yours.
+- **Unknown** means the worldwide realm lookup does not recognise the domain. On its own that is not enough to call the domain free: read it together with the OpenID lookup, as described in [When the realm lookup returns Unknown](#when-the-realm-lookup-returns-unknown).
 
 Note that `Managed` here describes how sign-in is handled. It does not tell you whether the tenant has an administrator, which is a separate question covered in [02-managed-vs-unmanaged.md](02-managed-vs-unmanaged.md).
 
@@ -78,6 +78,16 @@ If no tenant holds the domain, this request returned an error in testing, saying
 
 `tenant_region_scope` is a short region code for the tenant, such as `NA`, `EU` or `AS`. Microsoft Learn does not describe its values in detail, so treat it as a hint about where the tenant was set up rather than as a fact you rely on.
 
+## When the realm lookup returns Unknown
+
+In testing, a domain held by a tenant in the US Government cloud returned a `NameSpaceType` of `Unknown` from the worldwide realm endpoint, while its OpenID configuration still named the tenant, with a `cloud_instance_name` of `microsoftonline.us`. So read the two lookups together:
+
+- **Unknown and no tenant ID** from the OpenID lookup: no tenant claims the domain, and it is free to verify.
+- **Unknown and a tenant ID in a cloud other than `microsoftonline.com`**: the domain is held in that national cloud and is not free to verify.
+- **Unknown and a tenant ID in the worldwide cloud, or with no cloud value**: the two lookups disagree. Treat the result as inconclusive and run the lookups again.
+
+This is observed behaviour, not documented by Microsoft.
+
 ## Compare against your own tenant
 
 Run both lookups twice: once against the stuck domain, and once against a domain you know is in your own tenant. Your own initial domain, `destinationtenant.onmicrosoft.com`, works for this.
@@ -93,7 +103,9 @@ A different region scope on its own does not mean a different cloud. One tenant 
 
 - **Managed:** the domain is claimed by a tenant that signs users in itself.
 - **Federated:** the domain is claimed by a tenant that sends sign-in to an external identity provider, followed by the federation brand and the `AuthURL` when the response includes them.
-- **Unknown:** no tenant claims the domain, and it is free to verify.
+- **Unknown with no tenant ID:** no tenant claims the domain, and it is free to verify.
+- **Unknown with a tenant ID in another cloud:** the domain is held in that cloud, such as US Government, and is not free to verify.
+- **Unknown with a tenant ID in the worldwide cloud, or no cloud value:** the result is inconclusive, because the two lookups disagree.
 - **Anything else**, including a failed lookup: the result is inconclusive, and you should run the lookup again before acting on it.
 
 Add `-CompareDomain` with a domain from your own tenant and it also tells you whether the two domains sit in the same tenant.
